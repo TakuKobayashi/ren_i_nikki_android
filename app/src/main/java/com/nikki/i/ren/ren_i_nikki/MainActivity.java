@@ -45,11 +45,23 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         bluetoothAdapter.enable();
     }
 
+    private void loginApplication(){
+        GcmTokenReceiverTask task = new GcmTokenReceiverTask(this);
+        task.setOnTokenReceievedCallback(new GcmTokenReceiverTask.TokenReceievedCallback() {
+            @Override
+            public void onRecieve(String regId) {
+                Log.d(Config.TAG, "regId:" + regId);
+                moveNextActivity();
+            }
+        });
+        task.execute(Config.SENDER_ID);
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
-        if(mClient.isConnected()){
-            scesuleNextActivity();
+        if(mClient.isConnected()) {
+            loginApplication();
         }else {
             mClient.connect();
         }
@@ -59,21 +71,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onConnected(Bundle bundle) {
         Player player = Games.Players.getCurrentPlayer(mClient);
         Log.d(Config.TAG, "Id:" + player.getPlayerId() + " name:" + player.getDisplayName() + " success:" + bundle);
-        scesuleNextActivity();
+        loginApplication();
     }
 
-    private void scesuleNextActivity(){
-        Handler handler = new Handler(new Handler.Callback() {
-            @Override
-            public boolean handleMessage(Message msg) {
-                //次のactivityを実行
-                Intent intent = new Intent(MainActivity.this, MissionActivity.class);
-                startActivity(intent);
-                finish();
-                return true;
-            }
-        });
-        handler.sendEmptyMessageDelayed(0, START_SCREEN_DISPLAY_TIME);
+    private void moveNextActivity(){
+        //次のactivityを実行
+        Intent intent = new Intent(MainActivity.this, MissionActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     @Override
