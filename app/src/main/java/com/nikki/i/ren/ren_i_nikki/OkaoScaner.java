@@ -317,73 +317,87 @@ public class OkaoScaner extends ContextSingletonBase{
     */
 
   private void loopScanning() {
-    while(isScanning) {
-      if(!isConnected) {
-        // カメラに接続
-        String cameraID = "8JJXH1DERCK6UH9YS461";
-        int ret1 = api.connect(cameraID, accessToken);
-        Log.d(Config.TAG, "ret:" + ret1);
-        Int returnStatus = new Int();
-        if (ret1 == ErrorCodes.HVCW_SUCCESS) {
-          isConnected = true;
-          // アプリケーションIDを設定
-          Log.d(Config.TAG, "setAppID:" + APP_ID);
-          ret1 = api.setAppID(APP_ID, returnStatus);
-        }
-      }else{
-        // 顔検出・顔向き推定・年齢推定・性別推定をON
-        int useFunction[] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0};
-        OkaoResult result = new OkaoResult();
-        Int returnStatus = new Int();
-        // 実行
-        int ret = api.okaoExecute(useFunction, result, returnStatus);
-
-        StringBuilder sb = new StringBuilder();
-        if (ret == ErrorCodes.HVCW_SUCCESS) {
-          sb.append(String.format("errorCode=%d,returnStatus=%#x\n", ret, returnStatus.getIntValue()));
-          // 検出数
-          int count = result.getResultFaces().getCount();
-          ResultFace[] rf = result.getResultFaces().getResultFace();
-          sb.append(String.format("faceCount=%d", count));
-          mParams.clear();
-          SharedPreferences sp = Preferences.getCommonPreferences(context);
-          mParams.put("google_id", sp.getString("google_id", ""));
-          for (int i = 0; i < count; ++i) {
-            ResultExpression ex = rf[i].getExpression();
-            int[] score = ex.getScore();
-            for(int j = 0;j < score.length;j++) {
-              mParams.put("expression" + j, String.valueOf(score[j]));
+    new Thread(new Runnable() {
+      @Override
+      public void run() {
+        while(isScanning) {
+          if (!isConnected) {
+            // カメラに接続
+            String cameraID = "8JJXH1DERCK6UH9YS461";
+            int ret1 = api.connect(cameraID, accessToken);
+            Log.d(Config.TAG, "ret:" + ret1);
+            Int returnStatus = new Int();
+            if (ret1 == ErrorCodes.HVCW_SUCCESS) {
+              isConnected = true;
+              // アプリケーションIDを設定
+              Log.d(Config.TAG, "setAppID:" + APP_ID);
+              ret1 = api.setAppID(APP_ID, returnStatus);
             }
-            Log.d(Config.TAG, "deg:" + ex.getDegree());
+          } else {
+            // 顔検出・顔向き推定・年齢推定・性別推定をON
+            int useFunction[] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0};
+            OkaoResult result = new OkaoResult();
+            Int returnStatus = new Int();
+            // 実行
+            int ret = api.okaoExecute(useFunction, result, returnStatus);
+
+            StringBuilder sb = new StringBuilder();
+            if (ret == ErrorCodes.HVCW_SUCCESS) {
+              sb.append(String.format("errorCode=%d,returnStatus=%#x\n", ret, returnStatus.getIntValue()));
+              // 検出数
+              int count = result.getResultFaces().getCount();
+              if (count <= 0) continue;
+              ResultFace[] rf = result.getResultFaces().getResultFace();
+              SharedPreferences sp = Preferences.getCommonPreferences(context);
+              String googleId = sp.getString("google_id", null);
+              if(googleId != null && count <= 0) continue;
+              sb.append(String.format("faceCount=%d", count));
+              mParams.clear();
+              SharedPreferences sp = Preferences.getCommonPreferences(context);
+              mParams.put("google_id", sp.getString("google_id", ""));
+              for (int i = 0; i < count; ++i) {
+                ResultExpression ex = rf[i].getExpression();
+                int[] score = ex.getScore();
+                for (int j = 0; j < score.length; j++) {
+                  mParams.put("expression" + j, String.valueOf(score[j]));
+                }
+                Log.d(Config.TAG, "deg:" + ex.getDegree());
+              }
+              StringRequest postRequest = new StringRequest(Request.Method.POST, Config.ROOT_URL + "api/tv_program/capture",
+                      new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String s) {
+                          Log.d(Config.TAG, "res:" + s);
+                        }
+                      },
+                      new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                          Log.d(Config.TAG, error.getMessage());
+                        }
+                      }) {
+                @Override
+                protected Map<String, String> getParams() {
+                  return mParams;
+                }
+              };
+              RequestQueue queue = Volley.newRequestQueue(context);
+              queue.add(postRequest);
+              queue.start();
+              try {
+                Thread.sleep(3000);
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+              }
+            } else {
+              sb.append(String.format("errorCode=%d,returnStatus=%#x", ret, returnStatus.getIntValue()));
+            }
+            String msg = sb.toString();
+            Log.d(Config.TAG, "msg:" + msg);
           }
-          StringRequest postRequest = new StringRequest(Request.Method.POST,Config.ROOT_URL + "api/tv_program/capture",
-            new Response.Listener<String>() {
-              @Override
-              public void onResponse(String s) {
-                Log.d(Config.TAG, "res:" + s);
-              }
-            },
-            new Response.ErrorListener(){
-              @Override
-              public void onErrorResponse(VolleyError error){
-                Log.d(Config.TAG, error.getMessage());
-              }
-            }){
-              @Override
-              protected Map<String,String> getParams(){
-                return mParams;
-             }
-          };
-          RequestQueue queue = Volley.newRequestQueue(context);
-          queue.add(postRequest);
-          queue.start();
-        } else {
-          sb.append(String.format("errorCode=%d,returnStatus=%#x", ret, returnStatus.getIntValue()));
         }
-        String msg = sb.toString();
-        Log.d(Config.TAG, "msg:" + msg);
       }
-    }
+    }).start();
   }
 
   public void stopScan() {
