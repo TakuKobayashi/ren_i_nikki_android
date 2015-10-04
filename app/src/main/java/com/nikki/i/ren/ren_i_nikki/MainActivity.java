@@ -44,8 +44,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         mParams = new HashMap<String, String>();
 
-        //ImageView image = (ImageView) findViewById(R.id.sprashImage);
-        //image.setImageResource(R.mipmap.main);
+        ImageView image = (ImageView) findViewById(R.id.sprashImage);
+        image.setImageResource(R.mipmap.sprash);
 
         GoogleApiClient.Builder builder = new GoogleApiClient.Builder(this, this, this);
         builder.addApi(Games.API)
@@ -141,6 +141,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //ApplicationHelper.releaseImageView((ImageView) findViewById(R.id.sprashImage));
+        ApplicationHelper.releaseImageView((ImageView) findViewById(R.id.sprashImage));
     }
 }

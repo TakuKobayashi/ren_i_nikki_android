@@ -9,6 +9,7 @@ import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Window;
+import android.widget.ImageView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -22,12 +23,16 @@ public class MissionActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.mission_view);
+
+        ImageView missionImage = (ImageView) findViewById(R.id.missionImage);
+        missionImage.setImageResource(R.mipmap.mission01);
+
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //ApplicationHelper.releaseImageView((ImageView) findViewById(R.id.sprashImage));
+        ApplicationHelper.releaseImageView((ImageView) findViewById(R.id.missionImage));
     }
 }

@@ -1,0 +1,28 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" tools:context=".MainActivity">
+
+    <ImageView
+        android:id="@+id/missionImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+    />
+
+    <RelativeLayout
+        android:id="@+id/missionUnderLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/missionImage">
+
+        <com.google.android.maps.MapView
+            android:id="@+id/mapView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:enabled="true"
+            android:apiKey="AIzaSyCWCfhVxOk8ZnDlIuryxEbKbtSmMv8SkiA"/>
+
+    </RelativeLayout>
+
+</RelativeLayout>
