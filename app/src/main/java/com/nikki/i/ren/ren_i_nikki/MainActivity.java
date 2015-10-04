@@ -54,10 +54,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 .addScope(Games.SCOPE_GAMES)
                 .addScope(Plus.SCOPE_PLUS_LOGIN);
         mClient = builder.build();
-        moveNextActivity();
     }
 
     private void loginApplication(){
+        Player player = Games.Players.getCurrentPlayer(mClient);
+        Preferences.saveCommonParam(this, "google_id", player.getPlayerId());
         GcmTokenReceiverTask task = new GcmTokenReceiverTask(this);
         task.setOnTokenReceievedCallback(new GcmTokenReceiverTask.TokenReceievedCallback() {
             @Override
@@ -101,7 +102,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onStart() {
         super.onStart();
-        /*
         if(mClient.isConnected()) {
             Player player = Games.Players.getCurrentPlayer(mClient);
             Log.d(Config.TAG, "Id:" + player.getPlayerId());
@@ -109,7 +109,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }else {
             mClient.connect();
         }
-        */
     }
 
     @Override
@@ -123,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         //次のactivityを実行
         Intent intent = new Intent(MainActivity.this, MissionActivity.class);
         startActivity(intent);
-        //finish();
+        finish();
     }
 
     @Override

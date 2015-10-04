@@ -16,6 +16,7 @@ import java.util.Map;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -52,6 +53,7 @@ public class OkaoScaner extends ContextSingletonBase{
 
   private ArrayList<LocationUpdateListener> mListenerQueue;
   private boolean isScanning = false;
+  private HashMap<String, String> mParams;
 
   /** Omronから取得したAPIキー */
   private static final String API_KEY = "7Tkt9P8pFt4kwGubx768hZ3XZLJr4xpUtsaLbKwu"; // 取得したキーに置き換える
@@ -88,6 +90,7 @@ public class OkaoScaner extends ContextSingletonBase{
 
   public void init(Context context){
     super.init(context);
+    mParams = new HashMap<String, String>();
     mListenerQueue = new ArrayList<LocationUpdateListener>();
   }
 
@@ -342,14 +345,38 @@ public class OkaoScaner extends ContextSingletonBase{
           int count = result.getResultFaces().getCount();
           ResultFace[] rf = result.getResultFaces().getResultFace();
           sb.append(String.format("faceCount=%d", count));
+          mParams.clear();
+          SharedPreferences sp = Preferences.getCommonPreferences(context);
+          mParams.put("google_id", sp.getString("google_id", ""));
           for (int i = 0; i < count; ++i) {
             ResultExpression ex = rf[i].getExpression();
             int[] score = ex.getScore();
             for(int j = 0;j < score.length;j++) {
-              Log.d(Config.TAG, "ex:" + score[j]);
+              mParams.put("expression" + j, String.valueOf(score[j]));
             }
             Log.d(Config.TAG, "deg:" + ex.getDegree());
           }
+          StringRequest postRequest = new StringRequest(Request.Method.POST,Config.ROOT_URL + "api/tv_program/capture",
+            new Response.Listener<String>() {
+              @Override
+              public void onResponse(String s) {
+                Log.d(Config.TAG, "res:" + s);
+              }
+            },
+            new Response.ErrorListener(){
+              @Override
+              public void onErrorResponse(VolleyError error){
+                Log.d(Config.TAG, error.getMessage());
+              }
+            }){
+              @Override
+              protected Map<String,String> getParams(){
+                return mParams;
+             }
+          };
+          RequestQueue queue = Volley.newRequestQueue(context);
+          queue.add(postRequest);
+          queue.start();
         } else {
           sb.append(String.format("errorCode=%d,returnStatus=%#x", ret, returnStatus.getIntValue()));
         }
