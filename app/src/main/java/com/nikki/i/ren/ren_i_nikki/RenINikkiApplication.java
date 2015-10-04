@@ -6,6 +6,8 @@ public class RenINikkiApplication extends Application {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		OkaoScaner.getInstance(OkaoScaner.class).init(this);
+		OkaoScaner.getInstance(OkaoScaner.class).scanStart();
 	}
 
 	@Override
