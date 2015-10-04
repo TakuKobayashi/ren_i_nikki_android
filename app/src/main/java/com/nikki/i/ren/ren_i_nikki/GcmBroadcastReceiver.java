@@ -46,19 +46,17 @@ public class GcmBroadcastReceiver extends WakefulBroadcastReceiver {
         PendingIntent contentIntent = PendingIntent.getActivity(context, REQUEST_CODE, tappedIntent, PendingIntent.FLAG_ONE_SHOT);
 
         // LargeIcon の Bitmap を生成
-        Bitmap largeIcon = BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher);
+        Bitmap largeIcon = BitmapFactory.decodeResource(context.getResources(), R.mipmap.icon);
 
         // NotificationBuilderを作成
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
         builder.setContentIntent(contentIntent);
-        // ステータスバーに表示されるテキスト
-        builder.setTicker("Ticker");
         // アイコン
-        builder.setSmallIcon(R.mipmap.ic_launcher);
+        builder.setSmallIcon(R.mipmap.icon);
         // Notificationを開いたときに表示されるタイトル
-        builder.setContentTitle("ContentTitle");
+        builder.setContentTitle(intent.getStringExtra("title"));
         // Notificationを開いたときに表示されるサブタイトル
-        builder.setContentText("ContentText");
+        builder.setContentText(intent.getStringExtra("message"));
         // Notificationを開いたときに表示されるアイコン
         builder.setLargeIcon(largeIcon);
         // 通知するタイミング
@@ -66,7 +64,7 @@ public class GcmBroadcastReceiver extends WakefulBroadcastReceiver {
         // 通知時の音・バイブ・ライト
         builder.setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS);
         // タップするとキャンセル(消える)
-        builder.setAutoCancel(true);
+        builder.setAutoCancel(false);
 
         // NotificationManagerを取得
         NotificationManager manager = (NotificationManager) context.getSystemService(Service.NOTIFICATION_SERVICE);
