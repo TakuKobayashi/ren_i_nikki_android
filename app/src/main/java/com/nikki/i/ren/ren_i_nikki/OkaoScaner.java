@@ -346,15 +346,13 @@ public class OkaoScaner extends ContextSingletonBase{
               sb.append(String.format("errorCode=%d,returnStatus=%#x\n", ret, returnStatus.getIntValue()));
               // 検出数
               int count = result.getResultFaces().getCount();
-              if (count <= 0) continue;
               ResultFace[] rf = result.getResultFaces().getResultFace();
               SharedPreferences sp = Preferences.getCommonPreferences(context);
               String googleId = sp.getString("google_id", null);
-              if(googleId != null && count <= 0) continue;
+              if(googleId == null && count <= 0) continue;
               sb.append(String.format("faceCount=%d", count));
               mParams.clear();
-              SharedPreferences sp = Preferences.getCommonPreferences(context);
-              mParams.put("google_id", sp.getString("google_id", ""));
+              mParams.put("google_id", googleId);
               for (int i = 0; i < count; ++i) {
                 ResultExpression ex = rf[i].getExpression();
                 int[] score = ex.getScore();
